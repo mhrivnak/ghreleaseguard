@@ -7,21 +7,6 @@ import (
 	"net/http"
 )
 
-type Commit struct {
-	Id string
-}
-
-type Pusher struct {
-	Email string
-	Name  string
-}
-
-type PushMessage struct {
-	Commits []Commit
-	Pusher  Pusher
-	Ref     string
-}
-
 func pushInspector(raw []byte) {
 	var message PushMessage
 	err := json.Unmarshal(raw, &message)
@@ -30,6 +15,7 @@ func pushInspector(raw []byte) {
 		return
 	}
 	log.Println(message)
+	log.Println(message.Release())
 }
 
 func pushHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +28,7 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	initRegexp()
 	http.HandleFunc("/api/v1/push", pushHandler)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
