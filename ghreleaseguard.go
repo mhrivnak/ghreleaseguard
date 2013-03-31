@@ -28,7 +28,6 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	initRegexp()
 	http.HandleFunc("/api/v1/push", pushHandler)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {

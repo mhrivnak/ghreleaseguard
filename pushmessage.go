@@ -4,7 +4,7 @@ import (
 	"regexp"
 )
 
-var releaseExp *regexp.Regexp
+var releaseExp = regexp.MustCompile(`.*-(\d+\.\d+)$`)
 
 type Commit struct {
 	Id string
@@ -27,12 +27,4 @@ func (message *PushMessage) Release() string {
 		return result[1]
 	}
 	return ""
-}
-
-func initRegexp() {
-	var err error
-	releaseExp, err = regexp.Compile(`.*(\d+\.\d+)$`)
-	if err != nil {
-		panic(err)
-	}
 }
