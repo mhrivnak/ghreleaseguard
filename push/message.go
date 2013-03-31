@@ -1,4 +1,4 @@
-package main
+package push
 
 import (
 	"regexp"
@@ -15,13 +15,13 @@ type Pusher struct {
 	Name  string
 }
 
-type PushMessage struct {
+type Message struct {
 	Commits []Commit
 	Pusher  Pusher
 	Ref     string
 }
 
-func (message *PushMessage) Release() string {
+func (message *Message) Release() string {
 	result := releaseExp.FindStringSubmatch(message.Ref)
 	if len(result) == 2 {
 		return result[1]
