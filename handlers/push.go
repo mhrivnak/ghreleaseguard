@@ -1,8 +1,9 @@
-package push
+package handlers
 
 import (
 	"encoding/json"
 	"github.com/mhrivnak/ghreleaseguard/config"
+	"github.com/mhrivnak/ghreleaseguard/messages"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 
 // inspect parses the raw report sent by github, determines if a forbidden
 // commit is present in the push, and takes action if so.
-func inspect(raw []byte) {
-	var message Message
+func inspectPush(raw []byte) {
+	var message messages.PushMessage
 	err := json.Unmarshal(raw, &message)
 	if err != nil {
 		log.Println("push.inspect: ", err)
@@ -43,11 +44,11 @@ func inspect(raw []byte) {
 	}
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func PushHandler(w http.ResponseWriter, r *http.Request) {
 	raw, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("push.Handler: ", err)
 		return
 	}
-	go inspect(raw)
+	go inspectPush(raw)
 }

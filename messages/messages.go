@@ -1,4 +1,4 @@
-package push
+package messages
 
 import (
 	"regexp"
@@ -20,7 +20,7 @@ type Repository struct {
 	Owner User
 }
 
-type Message struct {
+type PushMessage struct {
 	Commits    []Commit
 	Pusher     User
 	Ref        string
@@ -31,7 +31,7 @@ var versionExp = regexp.MustCompile(`.*-(\d+\.\d+)$`)
 
 // Version examines the Message's "Ref" attribute and returns a version string,
 // if found.
-func (message *Message) Version() (string, bool) {
+func (message *PushMessage) Version() (string, bool) {
 	result := versionExp.FindStringSubmatch(message.Ref)
 	if len(result) == 2 {
 		return result[1], true
