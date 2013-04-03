@@ -1,7 +1,7 @@
-package messages
+package push
 
 import (
-	"regexp"
+	"github.com/mhrivnak/ghreleaseguard/messages"
 )
 
 // below types are used for receiving JSON data from GitHub
@@ -20,21 +20,15 @@ type Repository struct {
 	Owner User
 }
 
-type PushMessage struct {
+type Message struct {
 	Commits    []Commit
 	Pusher     User
 	Ref        string
 	Repository Repository
 }
 
-var versionExp = regexp.MustCompile(`.*-(\d+\.\d+)$`)
-
 // Version examines the Message's "Ref" attribute and returns a version string,
 // if found.
-func (message *PushMessage) Version() (string, bool) {
-	result := versionExp.FindStringSubmatch(message.Ref)
-	if len(result) == 2 {
-		return result[1], true
-	}
-	return "", false
+func (message *Message) Version() (string, bool) {
+	return messages.Version(message.Ref)
 }

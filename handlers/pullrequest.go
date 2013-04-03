@@ -3,52 +3,44 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/mhrivnak/ghreleaseguard/config"
-	"github.com/mhrivnak/ghreleaseguard/messages/push"
+	"github.com/mhrivnak/ghreleaseguard/messages/pullrequest"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
-// inspect parses the raw report sent by github, determines if a forbidden
-// commit is present in the push, and takes action if so.
-func inspectPush(raw []byte) {
-	var message push.Message
+func inspectPullRequest(raw []byte) {
+	var message pullrequest.Message
 	err := json.Unmarshal(raw, &message)
 	if err != nil {
 		log.Println("push.inspect: ", err)
 		return
 	}
+	log.Println(message)
 
 	// if we can't find a version, quit early
 	versionName, found := message.Version()
 	if !found {
+		log.Println("version not found")
 		return
 	}
 
 	// if we can't find a forbidden commit, quit early
 	forbiddenCommit, found := config.GetForbiddenCommit(
-		message.Repository.Owner.Name,
+		message.Repository.Owner.Login,
 		message.Repository.Name,
 		versionName)
 	if !found {
 		return
 	}
 	log.Println("Found forbidden commit: ", forbiddenCommit)
-
-	// search this push for the forbidden commit
-	for _, commit := range message.Commits {
-		if commit.Id == forbiddenCommit {
-			// Take action here! probably send an email
-			log.Println("MATCH! forbidden commit is in the push")
-		}
-	}
 }
 
-func PushHandler(w http.ResponseWriter, r *http.Request) {
+func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
 	raw, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println("PushHandler: ", err)
+		log.Println("PullRequestHandler: ", err)
 		return
 	}
-	go inspectPush(raw)
+	go inspectPullRequest(raw)
 }

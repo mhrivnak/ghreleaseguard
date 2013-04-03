@@ -10,6 +10,7 @@ import (
 func main() {
 	config.LoadConfig()
 	http.HandleFunc("/api/v1/push", handlers.PushHandler)
+	http.HandleFunc("/api/v1/pullrequest", handlers.PullRequestHandler)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
