@@ -11,7 +11,7 @@ func main() {
 	config.LoadConfig()
 	http.HandleFunc("/api/v1/push", handlers.PushHandler)
 	http.HandleFunc("/api/v1/pullrequest", handlers.PullRequestHandler)
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(config.ServerConfig.ListenAddress, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

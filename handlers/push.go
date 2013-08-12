@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/mhrivnak/ghreleaseguard/config"
 	"github.com/mhrivnak/ghreleaseguard/messages/push"
+	"github.com/mhrivnak/ghreleaseguard/notify"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,6 +41,7 @@ func inspectPush(raw []byte) {
 		if commit.Id == forbiddenCommit {
 			// Take action here! probably send an email
 			log.Println("MATCH! forbidden commit is in the push")
+            notify.Push(message.Ref, commit.Id, versionName)
 		}
 	}
 }

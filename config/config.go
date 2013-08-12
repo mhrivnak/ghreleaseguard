@@ -3,11 +3,21 @@ package config
 import (
 	"code.google.com/p/gcfg"
 	"log"
+    "os"
 )
 
 // This data structure gets traversed to determine if a given branch has a
 // forbidden commit defined
 var Owners map[string]Owner
+
+var ServerConfig Server
+
+type Server struct {
+    ListenAddress string
+    NotifyEmail string
+    FromEmail string
+    SMTPAddress string
+}
 
 type Owner struct {
 	Repos map[string]Repo
@@ -27,6 +37,7 @@ type release struct {
 
 // internal storage of the config data as loaded from disk
 type config struct {
+    Server Server
 	Release map[string]*release
 }
 
@@ -39,7 +50,7 @@ var configLoaded bool
 // config data in place and log a message about the failure.
 func LoadConfig() {
 	var values config
-	err := gcfg.ReadFileInto(&values, "/etc/ghreleaseguard.conf")
+	err := gcfg.ReadFileInto(&values, getConfigPath())
 	if err != nil {
 		if !configLoaded {
 			panic(err)
@@ -48,8 +59,18 @@ func LoadConfig() {
 			log.Println("Failed to load config: ", err)
 		}
 	}
+    ServerConfig = values.Server
 	Owners = parseConfig(values)
 	configLoaded = true
+}
+
+func getConfigPath() string {
+    path := os.Getenv("GHRGCONFIGPATH")
+    if path == "" {
+        return "/etc/ghreleaseguard.conf"
+    } else {
+        return path
+    }
 }
 
 // parseConfig accepts the parsed JSON data as structs and builds a data
