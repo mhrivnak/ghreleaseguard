@@ -4,40 +4,28 @@ import (
 	"github.com/mhrivnak/ghreleaseguard/messages"
 )
 
-type Commit struct {
-	Id string
-}
-
-type Href struct {
-	Href string
-}
-
 type Links struct {
-	Self Href
-}
-
-type Owner struct {
-	Login string
-}
-
-type Repository struct {
-	Owner Owner
-	Name  string
-}
-
-type Base struct {
-	Ref string
+	Self struct {
+		Href string
+	}
 }
 
 type PullRequest struct {
-	Base   Base
+	Base struct {
+		Ref string
+	}
 	Links  Links `json:"_links"`
 	Number uint
 }
 
 type Message struct {
 	PullRequest PullRequest `json:"pull_request"`
-	Repository  Repository
+	Repository  struct {
+		Owner struct {
+			Login string
+		}
+		Name string
+	}
 }
 
 // Version examines the Message's "Ref" attribute and returns a version string,

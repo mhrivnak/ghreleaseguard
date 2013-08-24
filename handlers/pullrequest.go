@@ -50,13 +50,11 @@ func inspectPullRequest(raw []byte) {
 
 func getPRCommits(href string) ([]Commit, error) {
 	// API call to get commits in this PR
-	commitURL, err := url.Parse(href)
+	url, err := createUrl(href)
 	if err != nil {
-		log.Println("error parsing PR URL: ", err)
 		return nil, err
 	}
-	commitURL.Path = path.Join(commitURL.Path, "commits")
-	response, err := http.Get(commitURL.String())
+	response, err := http.Get(url)
 	if err != nil {
 		log.Println("error getting commits: ", err)
 		return nil, err
@@ -75,6 +73,16 @@ func getPRCommits(href string) ([]Commit, error) {
 		return nil, err
 	}
 	return commits, nil
+}
+
+func createUrl(href string) (string, error) {
+	commitURL, err := url.Parse(href)
+	if err != nil {
+		log.Println("error parsing PR URL: ", err)
+		return "", err
+	}
+	commitURL.Path = path.Join(commitURL.Path, "commits")
+	return commitURL.String(), nil
 }
 
 type Commit struct {

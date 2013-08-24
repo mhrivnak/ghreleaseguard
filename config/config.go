@@ -3,29 +3,8 @@ package config
 import (
 	"code.google.com/p/gcfg"
 	"log"
-    "os"
+	"os"
 )
-
-// This data structure gets traversed to determine if a given branch has a
-// forbidden commit defined
-var Owners map[string]Owner
-
-var ServerConfig Server
-
-type Server struct {
-    ListenAddress string
-    NotifyEmail string
-    FromEmail string
-    SMTPAddress string
-}
-
-type Owner struct {
-	Repos map[string]Repo
-}
-
-type Repo struct {
-	Versions map[string]string
-}
 
 // directly represents a parsed config entry
 type release struct {
@@ -37,7 +16,7 @@ type release struct {
 
 // internal storage of the config data as loaded from disk
 type config struct {
-    Server Server
+	Server  Server
 	Release map[string]*release
 }
 
@@ -45,9 +24,9 @@ type config struct {
 var configLoaded bool
 
 // LoadConfig loads the config from disk, causes it to be parsed, and then
-// makes available the data structure Owners. If there is an error parsing the
-// file, but the config has previously been loaded, this will leave the existing
-// config data in place and log a message about the failure.
+// makes available the ServerConfig and Owners data structures. If there is an
+// error parsing the file, but the config has previously been loaded, this will
+// leave the existing config data in place and log a message about the failure.
 func LoadConfig() {
 	var values config
 	err := gcfg.ReadFileInto(&values, getConfigPath())
@@ -59,30 +38,34 @@ func LoadConfig() {
 			log.Println("Failed to load config: ", err)
 		}
 	}
-    ServerConfig = values.Server
-	Owners = parseConfig(values)
+	ServerConfig = values.Server
+	Owners = values.Owners()
 	configLoaded = true
 }
 
+// looks in an environment variable for a path to the config file, and if not
+// found, returns the default.
 func getConfigPath() string {
-    path := os.Getenv("GHRGCONFIGPATH")
-    if path == "" {
-        return "/etc/ghreleaseguard.conf"
-    } else {
-        return path
-    }
+	path := os.Getenv("GHRGCONFIGPATH")
+	if path == "" {
+		return "/etc/ghreleaseguard.conf"
+	} else {
+		return path
+	}
 }
 
-// parseConfig accepts the parsed JSON data as structs and builds a data
+// parseConfig operates on the parsed config data as structs and builds a data
 // structure suitable for the "Owners" value.
-func parseConfig(values config) map[string]Owner {
+func (values *config) Owners() map[string]Owner {
 	ret := make(map[string]Owner)
 	for _, release := range values.Release {
+		// owner may or may not already be in the return map
 		owner, ok := ret[release.Owner]
 		if !ok {
 			owner = Owner{make(map[string]Repo)}
 			ret[release.Owner] = owner
 		}
+		// repo may or may not already be in the owner map
 		repo, ok := owner.Repos[release.Repo]
 		if !ok {
 			repo = Repo{make(map[string]string)}
@@ -91,19 +74,4 @@ func parseConfig(values config) map[string]Owner {
 		repo.Versions[release.Version] = release.Commit
 	}
 	return ret
-}
-
-// GetForbiddenCommit traverses the "Owners" data structure based on data about
-// a branch and returns a forbidden commit ID if one is found.
-func GetForbiddenCommit(ownerName, repoName, version string) (string, bool) {
-	owner, ok := Owners[ownerName]
-	if !ok {
-		return "", false
-	}
-	repo, ok := owner.Repos[repoName]
-	if !ok {
-		return "", false
-	}
-	commit, ok := repo.Versions[version]
-	return commit, ok
 }

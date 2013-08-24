@@ -6,25 +6,22 @@ import (
 
 // below types are used for receiving JSON data from GitHub
 
-type Commit struct {
-	Id string
-}
-
 type User struct {
 	Email string
 	Name  string
 }
 
-type Repository struct {
-	Name  string
-	Owner User
-}
-
 type Message struct {
-	Commits    []Commit
+	Commits []struct {
+		Id string
+	}
 	Pusher     User
 	Ref        string
-	Repository Repository
+	Repository struct {
+		Name  string
+		Owner User
+		Url   string
+	}
 }
 
 // Version examines the Message's "Ref" attribute and returns a version string,
