@@ -20,7 +20,8 @@ func (data *PushData) Send() {
 		log.Println("notify.PushData.Send: ", err)
 		return
 	}
-	err = smtp.SendMail(config.ServerConfig.SMTPAddress, nil, config.ServerConfig.FromEmail, []string{config.ServerConfig.NotifyEmail}, buf.Bytes())
+	err = smtp.SendMail(config.ServerConfig.SMTPAddress, nil, config.ServerConfig.FromEmail,
+		[]string{config.ServerConfig.NotifyEmail}, buf.Bytes())
 	if err != nil {
 		log.Println("notify.PushData.Send: ", err)
 	}
