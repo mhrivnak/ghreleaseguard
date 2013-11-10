@@ -68,10 +68,7 @@ class TestGHRG(unittest.TestCase):
         data = open(os.path.join(DATADIR, 'goodpush.json')).read()
         response = urllib2.urlopen(url, data)
         
-        self.assertEqual(response.getcode(), 200)
-        # wait for processing
-        time.sleep(.2)
-        self.assertEqual(len(self.mailserver.messages), 0)
+        self._validate_good_response(response)
 
     def test_bad_push(self):
         """
@@ -81,32 +78,34 @@ class TestGHRG(unittest.TestCase):
         url = urlparse.urljoin(BASEURL, 'push')
         data = open(os.path.join(DATADIR, 'badpush.json')).read()
         response = urllib2.urlopen(url, data)
-        # wait for processing
-        time.sleep(.2)
-        
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(len(self.mailserver.messages), 1)
-        message = self.mailserver.messages[0]
-        self.assertEqual(message.mailfrom, 'testsender@hrivnak.org')
-        self.assertEqual(message.rcpttos, ['testreceiver@hrivnak.org'])
+
+        self._validate_bad_response(response)
 
     def test_good_pr(self):
         url = urlparse.urljoin(BASEURL, 'pullrequest')
         data = open(os.path.join(DATADIR, 'goodpr.json')).read()
         response = urllib2.urlopen(url, data)
-        # wait for processing
-        time.sleep(.2)
         
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(len(self.mailserver.messages), 0)
+        self._validate_good_response(response)
 
     def test_bad_pr(self):
         url = urlparse.urljoin(BASEURL, 'pullrequest')
         data = open(os.path.join(DATADIR, 'badpr.json')).read()
         response = urllib2.urlopen(url, data)
-        # wait for processing
+
+        self._validate_bad_response(response)
+
+    def _validate_good_response(self, response):
+        # wait for GHRG to process the request
         time.sleep(.2)
-        
+
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(len(self.mailserver.messages), 0)
+
+    def _validate_bad_response(self, response):
+        # wait for GHRG to process the request
+        time.sleep(.2)
+
         self.assertEqual(response.getcode(), 200)
         self.assertEqual(len(self.mailserver.messages), 1)
         message = self.mailserver.messages[0]

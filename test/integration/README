@@ -1,0 +1,9 @@
+These tests depend on standing up a fake SMTP server on localhost:1025 and a
+fake HTTP server on localhost:8081. They also depend on running GHRH itself on
+localhost:8080.
+
+These tests also depend on having GHRH source in the GOPATH.
+
+HOW TO RUN:
+
+python -m unittest discover test/integration/
