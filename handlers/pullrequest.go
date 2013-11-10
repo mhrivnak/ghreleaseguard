@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/mhrivnak/ghreleaseguard/config"
 	"github.com/mhrivnak/ghreleaseguard/messages/pullrequest"
+	"github.com/mhrivnak/ghreleaseguard/notify"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -44,6 +45,8 @@ func inspectPullRequest(raw []byte) {
 	for _, commit := range commits {
 		if commit.Sha == forbiddenCommit {
 			log.Println("MATCH! forbidden commit is in the PR")
+			data := notify.PullRequestData{commit.Sha, message.PullRequest.Links.Self.Href, versionName}
+			data.Send()
 		}
 	}
 }

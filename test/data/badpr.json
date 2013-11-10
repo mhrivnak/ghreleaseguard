@@ -16,7 +16,7 @@
                 "href": "https://api.github.com/repos/mhrivnak/testing/pulls/3/comments"
             },
             "self": {
-                "href": "https://api.github.com/repos/mhrivnak/testing/pulls/3"
+                "href": "http://localhost:8081/repos/mhrivnak/testing/pulls/3"
             }
         },
         "additions": 1,

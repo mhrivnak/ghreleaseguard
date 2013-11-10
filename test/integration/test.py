@@ -9,6 +9,7 @@ import urllib2
 import urlparse
 
 import fakesmtpd
+import fakehttpd
 
 
 DATADIR = os.path.join(os.path.dirname(__file__), '../data/')
@@ -30,13 +31,19 @@ class TestGHRG(unittest.TestCase):
         cls.loopthread = threading.Thread(target=asyncore.loop, kwargs={'timeout':1})
         cls.loopthread.start()
 
+        # start our fake github API
+        cls.httpd = fakehttpd.run()
+
         # let services get started
         time.sleep(2)
 
     @classmethod
     def tearDownClass(cls):
         cls.mailserver.close()
+        cls.httpd.shutdown()
         cls.proc.terminate()
+        print cls.proc.stdout.read()
+        print cls.proc.stderr.read()
 
     @staticmethod
     def _run_ghrg():
@@ -82,3 +89,26 @@ class TestGHRG(unittest.TestCase):
         message = self.mailserver.messages[0]
         self.assertEqual(message.mailfrom, 'testsender@hrivnak.org')
         self.assertEqual(message.rcpttos, ['testreceiver@hrivnak.org'])
+
+    def test_bad_pr(self):
+        url = urlparse.urljoin(BASEURL, 'pullrequest')
+        data = open(os.path.join(DATADIR, 'badpr.json')).read()
+        response = urllib2.urlopen(url, data)
+        # wait for processing
+        time.sleep(.5)
+        
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(len(self.mailserver.messages), 1)
+        message = self.mailserver.messages[0]
+        self.assertEqual(message.mailfrom, 'testsender@hrivnak.org')
+        self.assertEqual(message.rcpttos, ['testreceiver@hrivnak.org'])
+
+    def test_good_pr(self):
+        url = urlparse.urljoin(BASEURL, 'pullrequest')
+        data = open(os.path.join(DATADIR, 'goodpr.json')).read()
+        response = urllib2.urlopen(url, data)
+        # wait for processing
+        time.sleep(.5)
+        
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(len(self.mailserver.messages), 0)
