@@ -8,45 +8,26 @@ import (
 	"text/template"
 )
 
-func (data *PushData) Send() {
-	pushTemplate, err := template.New("push").Parse(pushMessage)
+func (data *MessageData) Send(body string) {
+	tmpl, err := template.New("message").Parse(body)
 	if err != nil {
-		log.Println("notify.PushData.Send: ", err)
+		log.Println("notify.MessageData.Send: ", err)
 		return
 	}
 	var buf bytes.Buffer
-	err = pushTemplate.Execute(&buf, data)
+	err = tmpl.Execute(&buf, data)
 	if err != nil {
-		log.Println("notify.PushData.Send: ", err)
+		log.Println("notify.MessageData.Send: ", err)
 		return
 	}
 	err = smtp.SendMail(config.ServerConfig.SMTPAddress, nil, config.ServerConfig.FromEmail,
 		[]string{config.ServerConfig.NotifyEmail}, buf.Bytes())
 	if err != nil {
-		log.Println("notify.PushData.Send: ", err)
+		log.Println("notify.MessageData.Send: ", err)
 	}
 }
 
-func (data *PullRequestData) Send() {
-	pushTemplate, err := template.New("pullrequest").Parse(pullRequestMessage)
-	if err != nil {
-		log.Println("notify.PullRequestData.Send: ", err)
-		return
-	}
-	var buf bytes.Buffer
-	err = pushTemplate.Execute(&buf, data)
-	if err != nil {
-		log.Println("notify.PullRequestData.Send: ", err)
-		return
-	}
-	err = smtp.SendMail(config.ServerConfig.SMTPAddress, nil, config.ServerConfig.FromEmail,
-		[]string{config.ServerConfig.NotifyEmail}, buf.Bytes())
-	if err != nil {
-		log.Println("notify.PullRequestData.Send: ", err)
-	}
-}
-
-const pushMessage = `
+const PushMessage = `
 The commit {{.Commit}} was pushed to branch
 {{.Branch}}, which appears to be a release branch for version {{.Version}}.
 That commit is marked as newer than version {{.Version}} and should probably
@@ -59,11 +40,11 @@ Please investigate ASAP.
 Sincerely,
 GH Release Guard`
 
-const pullRequestMessage = `
-The target branch for the pull request at the below URL appears to be a release
-branch for version {{.Version}}. Commit {{.Commit}} in that pull request is
-marked as newer than version {{.Version}}, so this pull request may be against
-the wrong branch.
+const PullRequestMessage = `
+Target branch {{.Branch}} for the pull request at the below URL appears to be a
+release branch for version {{.Version}}. Commit {{.Commit}} in that pull
+request is marked as newer than version {{.Version}}, so this pull request may
+be against the wrong branch.
 
 {{.Url}}
 
@@ -72,14 +53,8 @@ Please investigate ASAP.
 Sincerely,
 GH Release Guard`
 
-type PushData struct {
+type MessageData struct {
 	Branch  string
-	Commit  string
-	Url     string
-	Version string
-}
-
-type PullRequestData struct {
 	Commit  string
 	Url     string
 	Version string

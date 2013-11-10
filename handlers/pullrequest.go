@@ -45,8 +45,9 @@ func inspectPullRequest(raw []byte) {
 	for _, commit := range commits {
 		if commit.Sha == forbiddenCommit {
 			log.Println("MATCH! forbidden commit is in the PR")
-			data := notify.PullRequestData{commit.Sha, message.PullRequest.Links.Self.Href, versionName}
-			data.Send()
+			data := notify.MessageData{message.PullRequest.Base.Ref, commit.Sha,
+				message.PullRequest.Links.Self.Href, versionName}
+			data.Send(notify.PullRequestMessage)
 		}
 	}
 }

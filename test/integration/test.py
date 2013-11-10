@@ -17,7 +17,7 @@ CONFIGPATH = os.path.join(DATADIR, 'ghreleaseguard.conf')
 GOPATH = os.getenv('GOPATH')
 assert GOPATH is not None
 BINFILE = os.path.join(GOPATH, 'bin/ghreleaseguard')
-BASEURL = 'http://127.0.0.1:8080/api/v1/'
+BASEURL = 'http://localhost:8080/api/v1/'
 
 
 class TestGHRG(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestGHRG(unittest.TestCase):
         cls.httpd = fakehttpd.run()
 
         # let services get started
-        time.sleep(2)
+        time.sleep(1)
 
     @classmethod
     def tearDownClass(cls):
@@ -70,7 +70,7 @@ class TestGHRG(unittest.TestCase):
         
         self.assertEqual(response.getcode(), 200)
         # wait for processing
-        time.sleep(.5)
+        time.sleep(.2)
         self.assertEqual(len(self.mailserver.messages), 0)
 
     def test_bad_push(self):
@@ -82,20 +82,7 @@ class TestGHRG(unittest.TestCase):
         data = open(os.path.join(DATADIR, 'badpush.json')).read()
         response = urllib2.urlopen(url, data)
         # wait for processing
-        time.sleep(.5)
-        
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(len(self.mailserver.messages), 1)
-        message = self.mailserver.messages[0]
-        self.assertEqual(message.mailfrom, 'testsender@hrivnak.org')
-        self.assertEqual(message.rcpttos, ['testreceiver@hrivnak.org'])
-
-    def test_bad_pr(self):
-        url = urlparse.urljoin(BASEURL, 'pullrequest')
-        data = open(os.path.join(DATADIR, 'badpr.json')).read()
-        response = urllib2.urlopen(url, data)
-        # wait for processing
-        time.sleep(.5)
+        time.sleep(.2)
         
         self.assertEqual(response.getcode(), 200)
         self.assertEqual(len(self.mailserver.messages), 1)
@@ -108,7 +95,20 @@ class TestGHRG(unittest.TestCase):
         data = open(os.path.join(DATADIR, 'goodpr.json')).read()
         response = urllib2.urlopen(url, data)
         # wait for processing
-        time.sleep(.5)
+        time.sleep(.2)
         
         self.assertEqual(response.getcode(), 200)
         self.assertEqual(len(self.mailserver.messages), 0)
+
+    def test_bad_pr(self):
+        url = urlparse.urljoin(BASEURL, 'pullrequest')
+        data = open(os.path.join(DATADIR, 'badpr.json')).read()
+        response = urllib2.urlopen(url, data)
+        # wait for processing
+        time.sleep(.2)
+        
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(len(self.mailserver.messages), 1)
+        message = self.mailserver.messages[0]
+        self.assertEqual(message.mailfrom, 'testsender@hrivnak.org')
+        self.assertEqual(message.rcpttos, ['testreceiver@hrivnak.org'])

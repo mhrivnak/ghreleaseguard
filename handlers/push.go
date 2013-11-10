@@ -40,8 +40,8 @@ func inspectPush(raw []byte) {
 	for _, commit := range message.Commits {
 		if commit.Id == forbiddenCommit {
 			log.Println("MATCH! forbidden commit is in the push")
-			data := notify.PushData{message.Ref, commit.Id, message.Repository.Url, versionName}
-			data.Send()
+			data := notify.MessageData{message.Ref, commit.Id, message.Repository.Url, versionName}
+			data.Send(notify.PushMessage)
 		}
 	}
 }
