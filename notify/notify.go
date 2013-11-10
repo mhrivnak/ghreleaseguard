@@ -81,6 +81,6 @@ type PushData struct {
 
 type PullRequestData struct {
 	Commit  string
-    Url string
+	Url     string
 	Version string
 }
