@@ -1,6 +1,7 @@
-These tests depend on standing up a fake SMTP server on localhost:1025 and a
-fake HTTP server on localhost:8081. They also depend on running GHRH itself on
-localhost:8080.
+These tests depend on being able to stand up a fake SMTP server on
+localhost:1025 and a fake HTTP server on localhost:8081. They also depend on
+being able to run GHRH itself on localhost:8080. If any of those ports are
+unavailable, these tests will not be able to run.
 
 These tests also depend on having GHRH source in the GOPATH.
 
